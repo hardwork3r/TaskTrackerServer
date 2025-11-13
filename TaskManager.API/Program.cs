@@ -38,6 +38,28 @@ try
 
     builder.Configuration.AddEnvironmentVariables();
 
+    var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
+    var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME");
+
+    if (!string.IsNullOrEmpty(mongoConnectionString))
+    {
+        builder.Configuration["MongoDB:ConnectionString"] = mongoConnectionString;
+        Log.Information("MongoDB connection string loaded from environment variable");
+    }
+
+    if (!string.IsNullOrEmpty(mongoDatabaseName))
+    {
+        builder.Configuration["MongoDB:DatabaseName"] = mongoDatabaseName;
+    }
+
+    var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+        ?? builder.Configuration["JWT:SecretKey"]
+        ?? "your-secret-key-change-in-production";
+
+    var corsOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS")?.Split(',')
+        ?? builder.Configuration["CORS:Origins"]?.Split(',')
+        ?? new[] { "*" };
+
     builder.Services.AddInfrastructure(builder.Configuration);
 
     builder.Services.AddApplication();
@@ -47,7 +69,6 @@ try
     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
     // JWT Authentication
-    var jwtSecret = builder.Configuration["JWT:SecretKey"] ?? "your-secret-key-change-in-production";
     var jwtKey = Encoding.UTF8.GetBytes(jwtSecret);
 
     builder.Services.AddAuthentication(x =>
