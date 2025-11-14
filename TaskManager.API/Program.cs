@@ -94,7 +94,6 @@ try
     builder.Services.AddAuthorization();
 
     // CORS
-    var corsOrigins = builder.Configuration["CORS:Origins"]?.Split(',') ?? new[] { "*" };
     builder.Services.AddCors(options =>
     {
         options.AddDefaultPolicy(policy =>
